@@ -17,6 +17,7 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/gsi_keys.mk)
 # VAB
 $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota.mk)
 
+# AB
 ENABLE_VIRTUAL_AB := true
 AB_OTA_UPDATER := true
 
@@ -33,8 +34,7 @@ AB_OTA_PARTITIONS += \
     vbmeta \
     vbmeta_vendor \
     vbmeta_system
-
-# AB   
+   
 AB_OTA_POSTINSTALL_CONFIG += \
     RUN_POSTINSTALL_system=true \
     POSTINSTALL_PATH_system=system/bin/otapreopt_script \
@@ -47,11 +47,14 @@ AB_OTA_POSTINSTALL_CONFIG += \
     FILESYSTEM_TYPE_system=ext4 \
     POSTINSTALL_OPTIONAL_system=true
 
+PRODUCT_PACKAGES += \
+    otapreopt_script \
+    cppreopts.sh
+
 # Dynamic Partition
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
 
 # API & VNDK
-PRODUCT_TARGET_VNDK_VERSION := current
 PRODUCT_SHIPPING_API_LEVEL := 30
 
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -80,22 +83,14 @@ PRODUCT_PACKAGES += \
     mtk_plpath_utils \
     mtk_plpath_utils.recovery
 
-# Keymaster
+# Update engine
 PRODUCT_PACKAGES += \
-    keymaster4 \
-    keymaster4support \
-    keymaster_portable \
-    keymaster_messages
+    update_engine \
+    update_engine_sideload \
+    update_verifier
 
 PRODUCT_PACKAGES_DEBUG += \
     update_engine_client
-
-PRODUCT_PACKAGES += \
-    otapreopt_script \
-    cppreopts.sh \
-    update_engine \
-    update_verifier \
-    update_engine_sideload
 
 # Additional configs
 TW_RECOVERY_ADDITIONAL_RELINK_LIBRARY_FILES += \
@@ -103,11 +98,15 @@ TW_RECOVERY_ADDITIONAL_RELINK_LIBRARY_FILES += \
     $(TARGET_OUT_SHARED_LIBRARIES)/keymaster4support \
     $(TARGET_OUT_SHARED_LIBRARIES)/keymaster_portable \
     $(TARGET_OUT_SHARED_LIBRARIES)/keymaster_messages \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libpuresoftkeymasterdevice.so
+    $(TARGET_OUT_SHARED_LIBRARIES)/libpuresoftkeymasterdevice \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libhwbinder \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libhidltransport
 
 TARGET_RECOVERY_DEVICE_MODULES += \
     keymaster4.so \
     keymaster4support.so \
     keymaster_portable.so \
-    keymaster_portable.so \
-    libpuresoftkeymasterdevice.so
+    keymaster_messages.so \
+    libpuresoftkeymasterdevice.so \
+    libhwbinder.so \
+    libhidltransport.so
