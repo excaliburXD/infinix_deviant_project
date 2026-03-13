@@ -14,19 +14,19 @@ on:
       DEVICE_TREE:
         description: 'Custom Recovery Tree URL'
         required: true
-        default: 'https://github.com/excaliburXD/twrp_deviant_project.git'
+        default: 'https://github.com/excaliburXD/infinix_deviant_project.git'
       DEVICE_TREE_BRANCH:
         description: 'Device Tree Branch'
         required: true
-        default: 'fox-11.0'
+        default: 'fox-11-deviant'
       DEVICE_PATH:
         description: 'Device Path (e.g., device/xiaomi/sweet)'
         required: true
-        default: 'device/infinix/deviant'
+        default: 'device/infinix/Deviant'
       DEVICE_NAME:
         description: 'Device Codename'
         required: true
-        default: 'deviant'
+        default: 'Deviant'
       BUILD_TARGET:
         description: 'Build Target'
         required: true
