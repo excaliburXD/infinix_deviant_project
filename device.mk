@@ -106,6 +106,7 @@ PRODUCT_PACKAGES_DEBUG += \
 TARGET_RECOVERY_DEVICE_MODULES += \
     libkeymaster4 \
     libkeymaster4support \
+    libkeymaster4_1support \
     libkeymaster_messages \
     libkeymaster_portable \
     libpuresoftkeymasterdevice \
@@ -116,6 +117,7 @@ TARGET_RECOVERY_DEVICE_MODULES += \
 RECOVERY_LIBRARY_SOURCE_FILES += \
     $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster4.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster4support.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster4_1support.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster_messages.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster_portable.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libpuresoftkeymasterdevice.so \
