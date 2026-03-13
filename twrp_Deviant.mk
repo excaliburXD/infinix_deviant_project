@@ -14,5 +14,5 @@ $(call inherit-product, device/infinix/Deviant/device.mk)
 PRODUCT_DEVICE := Deviant
 PRODUCT_NAME := twrp_Deviant
 PRODUCT_BRAND := Infinix
-PRODUCT_MODEL := Infinix deviant
+PRODUCT_MODEL := Infinix Deviant
 PRODUCT_MANUFACTURER := INFINIX MOBILITY LIMITED
