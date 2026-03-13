@@ -1,5 +1,5 @@
 cc_library_static {
-    name: "libinit_Infinix-deviant",
+    name: "libinit_Infinix-Deviant",
     header_libs: [
         "libbase_headers",
     ],
@@ -9,6 +9,6 @@ cc_library_static {
     static_libs: [
         "libbase",
     ],
-    srcs: ["init_Infinix-deviant.cpp"],
+    srcs: ["init_Infinix-Deviant.cpp"],
     recovery_available: true,
 }
