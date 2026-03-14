@@ -65,6 +65,10 @@ PRODUCT_PACKAGES += \
     android.hardware.health@2.1-impl \
     android.hardware.health@2.1-service
 
+# Keymaster
+PRODUCT_PACKAGES += \
+    android.hardware.keymaster@4.0
+
 # Fastbootd
 PRODUCT_PACKAGES += \
     android.hardware.fastboot@1.0-impl-mock \
@@ -75,23 +79,6 @@ PRODUCT_PACKAGES += \
     create_pl_dev \
     create_pl_dev.recovery
 
-# Gatekeeper 
-PRODUCT_PACKAGES += \
-    android.hardware.gatekeeper@1.0-service
-
-# Keymaster Beanpod
-PRODUCT_PACKAGES += \
-    android.hardware.keymaster@4.0-service.beanpod
-
-# Attestation
-PRODUCT_PACKAGES += \
-    vendor.mediatek.hardware.keymaster_attestation@1.1-impl \
-    vendor.mediatek.hardware.keymaster_attestation@1.1-service
-
-# TEE Daemon
-PRODUCT_PACKAGES += \
-    teei_daemon
-
 # Update engine
 PRODUCT_PACKAGES += \
     update_engine \
@@ -101,9 +88,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES_DEBUG += \
     update_engine_client
 
-# Additional Libraries
+# Additional Configs
 TARGET_RECOVERY_DEVICE_MODULES += \
+    android.hardware.keymaster@4.0 \
     libkeymaster4 \
+    libkeymaster41 \
     libkeymaster4support \
     libkeymaster4_1support \
     libkeymaster_messages \
@@ -111,10 +100,14 @@ TARGET_RECOVERY_DEVICE_MODULES += \
     libpuresoftkeymasterdevice \
     libhwbinder \
     libhidltransport \
-    wait_for_keymaster
+    libhardware \
+    libhidlbase \
+    libutils
 
 RECOVERY_LIBRARY_SOURCE_FILES += \
+    $(TARGET_OUT_SHARED_LIBRARIES)/android.hardware.keymaster@4.0 \
     $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster4.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster41.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster4support.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster4_1support.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster_messages.so \
@@ -122,4 +115,6 @@ RECOVERY_LIBRARY_SOURCE_FILES += \
     $(TARGET_OUT_SHARED_LIBRARIES)/libpuresoftkeymasterdevice.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libhwbinder.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libhidltransport.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/wait_for_keymaster
+    $(TARGET_OUT_SHARED_LIBRARIES)/libhardware.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libhidlbase \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libutils
