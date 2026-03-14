@@ -25,9 +25,9 @@ void vendor_load_properties()
     for (const string &prop : prop_partitions)
     {
         property_override(string("ro.product.") + prop + string("brand"), "Infinix");
-        property_override(string("ro.product.") + prop + string("name"), "X695C-GL-Deviant");
-        property_override(string("ro.product.") + prop + string("device"), "Infinix-X695C-Deviant");
-        property_override(string("ro.product.") + prop + string("model"), "Infinix X695C-Deviant");
+        property_override(string("ro.product.") + prop + string("name"), "Deviant");
+        property_override(string("ro.product.") + prop + string("device"), "Infinix-Deviant");
+        property_override(string("ro.product.") + prop + string("model"), "Infinix Deviant");
         property_override(string("ro.product.") + prop + string("marketname"), "Infinix Note 10 Pro");
         property_override(string("ro.product.system.") + prop + string("device"), "Infinix Note 10 Pro");
     }

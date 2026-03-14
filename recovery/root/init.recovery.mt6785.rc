@@ -1,4 +1,4 @@
-import /init.microtrust_Deviant.rc
+import /init.microtrust_deviant.rc
 
 on init
     # Create a more standard /dev/block layout for our scripts

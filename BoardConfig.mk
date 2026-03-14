@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-DEVICE_PATH := device/infinix/Deviant
+DEVICE_PATH := device/infinix/deviant
 
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
@@ -115,7 +115,6 @@ BOARD_HAS_LARGE_FILESYSTEM := true
 BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_SUPPRESS_SECURE_ERASE := true
 BOARD_USES_RECOVERY_AS_BOOT := true
-BOARD_USES_GENERIC_KERNEL_IMAGE := true
 BOARD_ROOT_EXTRA_FOLDERS += metadata
 BOARD_BUILD_SYSTEM_ROOT_IMAGE := false
 BOARD_DYNAMIC_PARTITION := true
@@ -192,10 +191,9 @@ TW_EXCLUDE_TWRPAPP := true
 TW_EXCLUDE_BASH := true
 TW_EXCLUDE_NANO := true
 TW_EXCLUDE_LPDUMP := true
-TW_EXCLUDE_TZDATA := true
 TW_EXCLUDE_PYTHON := true
 TW_EXCLUDE_SUPER_VOLUME := true
 
 # Init
-TARGET_INIT_VENDOR_LIB := libinit_Infinix-Deviant
-TARGET_RECOVERY_DEVICE_MODULES := libinit_Infinix-Deviant
+TARGET_INIT_VENDOR_LIB := libinit_Infinix-deviant
+TARGET_RECOVERY_DEVICE_MODULES := libinit_Infinix-deviant

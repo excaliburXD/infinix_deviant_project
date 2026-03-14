@@ -3,7 +3,7 @@
 # Locale & Device Configuration
 export LC_ALL="C"
 export TARGET_DEVICE_ALT="X695D,X695,Infinix-X695D,Infinix-X695"
-export FOX_TARGET_DEVICES="X695C,Deviant,Infinix-X695C,Deviant"
+export FOX_TARGET_DEVICES="X695C,deviant,Infinix-X695C"
 
 # Partitions Recovery
 export FOX_RECOVERY_BOOT_PARTITION="/dev/block/platform/bootdevice/by-name/boot"
@@ -36,9 +36,9 @@ export FOX_USE_TAR_BINARY=1
 export FOX_USE_XZ_UTILS=1
 
 # Build Metadata
-export FOX_BUILD_TYPE="Userdebug"
-export FOX_VERSION="R11.1_2-Deviant"
-export FOX_VARIANT="XOS"
+export FOX_BUILD_TYPE="userdebug"
+export FOX_VERSION="R11.1-deviant"
+export FOX_VARIANT="XOS-V590"
 export OF_MAINTAINER="excaliburXD"
 
 # AVB & Treble
