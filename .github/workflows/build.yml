@@ -1,0 +1,204 @@
+name: Build TWRP Recovery
+
+on:
+  push:
+    branches:
+      - twrp-*
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+  pull_request:
+    branches:
+      - twrp-*
+  workflow_dispatch:
+    inputs:
+      twrp_branch:
+        description: 'TWRP manifest branch'
+        required: true
+        default: 'twrp-11'
+        type: choice
+        options:
+          - twrp-11
+          - twrp-12.1
+      clean_build:
+        description: 'Clean build (full sync)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  DEVICE: deviant
+  MANIFEST_URL: https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout device tree
+        uses: actions/checkout@v4
+        with:
+          path: device_tree
+
+      - name: Set environment variables
+        run: |
+          echo "DEVICE=deviant" >> $GITHUB_ENV
+          echo "VENDOR=infinix" >> $GITHUB_ENV
+          echo "TWRP_BRANCH=${{ github.event.inputs.twrp_branch || 'twrp-11' }}" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bc bison build-essential ccache curl flex \
+            g++-multilib gcc-multilib git gnupg gperf \
+            imagemagick lib32ncurses5-dev lib32readline-dev \
+            lib32z1-dev liblz4-tool libncurses5 libncurses5-dev \
+            libsdl1.2-dev libssl-dev libwxgtk3.0-gtk3-dev \
+            libxml2 libxml2-utils lzop pngcrush \
+            rsync schedtool squashfs-tools xsltproc \
+            zip zlib1g-dev python3 python3-pip openjdk-11-jdk
+
+      - name: Install repo
+        run: |
+          mkdir -p ~/bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+          chmod a+x ~/bin/repo
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Configure git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git config --global color.ui auto
+
+      - name: Cache TWRP source
+        id: cache_source
+        uses: actions/cache@v4
+        with:
+          path: ~/twrp
+          key: twrp-source-${{ env.TWRP_BRANCH }}-${{ hashFiles('device_tree/BoardConfig.mk') }}
+          restore-keys: |
+            twrp-source-${{ env.TWRP_BRANCH }}-
+            twrp-source-
+
+      - name: Initialize TWRP source
+        if: steps.cache_source.outputs.cache-hit != 'true' || github.event.inputs.clean_build == 'true'
+        run: |
+          mkdir -p ~/twrp && cd ~/twrp
+          repo init -u ${{ env.MANIFEST_URL }} -b ${{ env.TWRP_BRANCH }} --depth=1
+
+      - name: Sync TWRP source
+        run: |
+          cd ~/twrp
+          if [ "${{ github.event.inputs.clean_build }}" == "true" ]; then
+            repo init -u ${{ env.MANIFEST_URL }} -b ${{ env.TWRP_BRANCH }} --depth=1
+            repo sync --force-sync -j$(nproc --all)
+          else
+            repo sync -j$(nproc --all) || repo sync -j$(nproc --all) --fail-fast
+          fi
+
+      - name: Setup device tree
+        run: |
+          cd ~/twrp
+          mkdir -p device/${{ env.VENDOR }}/${{ env.DEVICE }}
+          cp -r $GITHUB_WORKSPACE/device_tree/* device/${{ env.VENDOR }}/${{ env.DEVICE }}/
+
+      - name: Build TWRP
+        run: |
+          cd ~/twrp
+          source build/envsetup.sh
+          lunch twrp_${{ env.DEVICE }}-eng
+          mka bootimage -j$(nproc --all)
+
+      - name: Prepare artifacts
+        run: |
+          cd ~/twrp
+          mkdir -p output
+          
+          # Copy boot.img (recovery image for A/B devices)
+          if [ -f out/target/product/${{ env.DEVICE }}/boot.img ]; then
+            cp out/target/product/${{ env.DEVICE }}/boot.img output/
+          fi
+          
+          # Copy recovery.img if exists (non A/B devices)
+          if [ -f out/target/product/${{ env.DEVICE }}/recovery.img ]; then
+            cp out/target/product/${{ env.DEVICE }}/recovery.img output/
+          fi
+          
+          # Generate build info
+          echo "## Build Information" > output/BUILD_INFO.md
+          echo "" >> output/BUILD_INFO.md
+          echo "| Property | Value |" >> output/BUILD_INFO.md
+          echo "|----------|-------|" >> output/BUILD_INFO.md
+          echo "| Device | ${{ env.DEVICE }} |" >> output/BUILD_INFO.md
+          echo "| TWRP Branch | ${{ env.TWRP_BRANCH }} |" >> output/BUILD_INFO.md
+          echo "| Build Date | $(date -u +"%Y-%m-%d %H:%M:%S UTC") |" >> output/BUILD_INFO.md
+          echo "| Commit | ${{ github.sha }} |" >> output/BUILD_INFO.md
+          
+          ls -la output/
+          
+          # Copy to workspace for release upload
+          mkdir -p $GITHUB_WORKSPACE/output
+          cp -r output/* $GITHUB_WORKSPACE/output/
+
+      - name: Upload boot.img artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: twrp-${{ env.DEVICE }}-${{ github.run_number }}
+          path: ~/twrp/output/
+          retention-days: 30
+
+      - name: Upload to Release (on twrp-11 branch push)
+        if: github.ref == 'refs/heads/twrp-11' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: TWRP ${{ env.DEVICE }} Build ${{ github.run_number }}
+          body: |
+            ## TWRP Recovery for Infinix X695C
+            
+            Build Date: ${{ github.event.head_commit.timestamp }}
+            Commit: ${{ github.sha }}
+            
+            ### Flashing Instructions
+            ```bash
+            fastboot flash boot_a boot.img
+            fastboot flash boot_b boot.img
+            fastboot reboot recovery
+            ```
+          files: |
+            ${{ github.workspace }}/output/boot.img
+            ${{ github.workspace }}/output/BUILD_INFO.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Optional: Telegram notification
+  notify:
+    needs: build
+    runs-on: ubuntu-latest
+    if: always() && github.event_name == 'push'
+    
+    steps:
+      - name: Notify build status
+        if: env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          STATUS="${{ job.status }}"
+          EMOJI="✅"
+          [ "$STATUS" != "success" ] && EMOJI="❌"
+          
+          MESSAGE="$EMOJI *TWRP Build for x695c*
+          
+          Status: $STATUS
+          Branch: ${{ github.ref_name }}
+          Commit: \`${{ github.sha }}\`
+          
+          [View Build](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode="Markdown" \
+            -d text="$MESSAGE"
