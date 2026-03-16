@@ -4,9 +4,6 @@ on init
     # Create a more standard /dev/block layout for our scripts
     symlink /dev/block/platform/bootdevice /dev/block/bootdevice
     export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw
-
-    # USB Configuration
-    setprop sys.usb.configfs 1
     setprop sys.usb.ffs.aio_compat 0
 
 on fs
