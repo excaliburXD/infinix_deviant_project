@@ -167,7 +167,7 @@ TW_OEM_STORAGE := 0
 # Storage
 TW_HAS_MTP := true
 TW_MTP_DEVICE := /dev/mtp_usb
-TW_NO_USB_STORAGE := false
+TW_NO_USB_STORAGE := true
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /config/usb_gadget/g1/functions/mass_storage.usb0/lun.%d/file
 
 # Debug
