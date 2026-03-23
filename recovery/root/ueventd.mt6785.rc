@@ -9,6 +9,8 @@
 /dev/block/sda                                   0660    root    system
 /dev/block/sdb                                   0660    root    system
 /dev/block/sdc                                   0660    root    system
+/dev/block/sdc*                                  0660    root    system
+/dev/block/sdd                                   0660    root    system
 
 # eMMC/UFS common
 /dev/block/platform/bootdevice/by-name/misc2     0660    root    system
