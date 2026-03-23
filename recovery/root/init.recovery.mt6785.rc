@@ -4,7 +4,10 @@ on init
     # Create a more standard /dev/block layout for our scripts
     symlink /dev/block/platform/bootdevice /dev/block/bootdevice
     export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw
+    setprop sys.usb.configfs 1
     setprop sys.usb.ffs.aio_compat 0
+    setprop sys.usb.config adb
+    setprop sys.usb.controller musb-hdrc
 
 on fs
     # Mount persist partition
@@ -23,6 +26,9 @@ on post-fs
     # Start core services
     start hwservicemanager
     start servicemanager
+    start vndservicemanager
+
+on property:hwservicemanager.ready=true
     start teei_daemon
 
 service hwservicemanager /system/bin/hwservicemanager
@@ -33,6 +39,12 @@ service hwservicemanager /system/bin/hwservicemanager
     seclabel u:r:recovery:s0
 
 service servicemanager /system/bin/servicemanager
+    user root
+    group root readproc
+    disabled
+    seclabel u:r:recovery:s0
+
+service vndservicemanager /system/bin/vndservicemanager
     user root
     group root readproc
     disabled
@@ -75,19 +87,24 @@ service wait_for_keymaster /system/bin/wait_for_keymaster
     disabled
     seclabel u:r:recovery:s0
 
+service boot-hal-1-1 /vendor/bin/hw/android.hardware.boot@1.1-service
+    class hal
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
+service health-hal-2-1 /vendor/bin/hw/android.hardware.health@2.1-service
+    class hal
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
 on property:ro.crypto.state=encrypted && property:ro.crypto.type=file
     start wait_for_keymaster
     start vendor.keymaster-4-0-beanpod
     start vendor.gatekeeper-1-0
-    start teei_daemon
-    
-on property:hwservicemanager.ready=true
-    start wait_for_keymaster
-    start vendor.keymaster-4-0-beanpod
-    start vendor.gatekeeper-1-0
-
-on property:crypto.ready=1
-    start vendor.keymaster-4-0-beanpod
 
 on property:vendor.sys.listener.registered=true
     start vendor.gatekeeper-1-0
