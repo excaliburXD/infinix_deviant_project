@@ -36,6 +36,13 @@
 /spmfw                    emmc     /dev/block/platform/bootdevice/by-name/spmfw                    flags=display="Spmfw";slotselect;backup;flashimg
 /tee                      emmc     /dev/block/platform/bootdevice/by-name/tee                      flags=display="Tee";slotselect;backup;flashimg
 
+# Cache 
+Cache partition (tranfs)
+/cache                    ext4     /dev/block/platform/bootdevice/by-name/tranfs                   flags=display="Cache";backup;wipeingui
+
+# Super Partition
+/super                    emmc     /dev/block/platform/bootdevice/by-name/super                    flags=display="Super";backup;flashimg
+
 # External & Storage
 /storage                  f2fs     /data/media/0                                                   flags=display="Internal Storage";usermrf;backup=1;fsflags="bind";removable
 /external_sd              vfat     /dev/block/mmcblk0p1 /dev/block/mmcblk0 /dev/block/mmcblk1p1    flags=display="Micro SD Card";storage;wipeingui;removable;backup=0
