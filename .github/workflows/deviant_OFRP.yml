@@ -149,7 +149,7 @@ jobs:
           echo "Warning: No specific makefile found, using default twrp_${{ github.event.inputs.DEVICE_NAME }}"
         fi
 
-    - name: Building OrangeFox
+    - name: Building OrangeFox 
       run: |
         cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}        
         set +e
