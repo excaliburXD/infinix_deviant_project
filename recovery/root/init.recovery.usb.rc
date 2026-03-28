@@ -36,6 +36,7 @@ on init
     setprop vendor.usb.acm_port0 ""
     setprop vendor.usb.acm_port1 ""
     setprop vendor.usb.acm_enable 0
+    setprop sys.usb.config mtp,adb
 
 on property:ro.boot.usbcontroller=*
     setprop sys.usb.controller ${ro.boot.usbcontroller}
@@ -67,6 +68,7 @@ on fs
     write /sys/class/android_usb/android0/f_ffs/aliases adb
     chmod 0666 /sys/devices/platform/tran_battery/OTG_CTL
     write /sys/devices/platform/tran_battery/OTG_CTL 1
+    write /config/usb_gadget/g1/UDC ${sys.usb.controller}
 
 on boot
     start health-hal-2-1
@@ -81,6 +83,7 @@ on property:sys.usb.config=none && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/bDeviceProtocol 0
     rm /config/usb_gadget/g1/configs/b.1/f1
     rm /config/usb_gadget/g1/configs/b.1/f2
+    rm /config/usb_gadget/g1/configs/b.1/f3
     rmdir /config/usb_gadget/g1/functions/rndis.gs4
     write /sys/devices/platform/mt_usb/saving 0
     setprop sys.usb.state ${sys.usb.config}
@@ -103,7 +106,7 @@ on property:sys.usb.config=mtp && property:sys.usb.configfs=1
     rm /config/usb_gadget/g1/configs/b.1/f1
     rm /config/usb_gadget/g1/configs/b.1/f2
     write /config/usb_gadget/g1/idVendor 0x0e8d
-    write /config/usb_gadget/g1/idProduct 0x2008
+    write /config/usb_gadget/g1/idProduct 0x201d
     write /config/usb_gadget/g1/os_desc/use 1
     symlink /config/usb_gadget/g1/functions/mtp.gs0 /config/usb_gadget/g1/configs/b.1/f1
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
@@ -118,9 +121,29 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.config=mtp,adb && property:s
     rm /config/usb_gadget/g1/configs/b.1/f1
     rm /config/usb_gadget/g1/configs/b.1/f2
     write /config/usb_gadget/g1/idVendor 0x0e8d
-    write /config/usb_gadget/g1/idProduct 0x2008
+    write /config/usb_gadget/g1/idProduct 0x201d
     write /config/usb_gadget/g1/os_desc/use 1
     symlink /config/usb_gadget/g1/functions/mtp.gs0 /config/usb_gadget/g1/configs/b.1/f1
     symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f2
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
+    
+# fastbootd support 
+service fastbootd /system/bin/fastbootd
+    class main
+    disabled
+    seclabel u:r:fastbootd:s0
+    
+on property:ro.bootmode=fastboot
+    stop adbd
+    setprop sys.usb.config fastboot
+    start fastbootd
+
+on property:sys.usb.config=fastboot && property:sys.usb.configfs=1
+    write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "fastbootd"
+    rm -f /config/usb_gadget/g1/configs/b.1/f*
+    write /config/usb_gadget/g1/idVendor 0x18d1
+    write /config/usb_gadget/g1/idProduct 0x4eef
+    symlink /config/usb_gadget/g1/functions/ffs.fastboot /config/usb_gadget/g1/configs/b.1/f1
+    write /config/usb_gadget/g1/UDC ${sys.usb.controller}
+    setprop sys.usb.state fastboot
