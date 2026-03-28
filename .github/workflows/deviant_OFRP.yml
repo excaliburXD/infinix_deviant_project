@@ -173,17 +173,16 @@ jobs:
         files: |
           OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/out/target/product/${{ inputs.DEVICE_NAME }}/OrangeFox*.img
           OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/out/target/product/${{ inputs.DEVICE_NAME }}/OrangeFox*.zip
-         name: OrangeFox Recovery for ${{ inputs.DEVICE_NAME }} - ${{ env.BUILD_DATE }}
-         tag_name: ${{ github.run_id }}
-         body : |
+        name: OrangeFox Recovery for ${{ inputs.DEVICE_NAME }} - ${{ env.BUILD_DATE }}
+        tag_name: ${{ github.run_id }}
+        body : |
             Firmware Version **RP1A.200720.011/221114V590**
-            **Date:** ${{ github.event.head_commit.timestamp }}
+            
             **Build:** fox_${{ inputs.MANIFEST_BRANCH }}
             **Device:** ${{ inputs.DEVICE_NAME }}
             **Maintainer:** @${{ github.actor }}
             **Status:** deviant-stabil
             **Variant:** XOS
-            **Author:** ${{ github.event.head_commit.author.name }}
             **Commit:** `${{ github.sha }}`
 
     - name: Cleanup after build
