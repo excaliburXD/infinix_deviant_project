@@ -1,24 +1,30 @@
-# FBE
-ro.crypto.volume.filenames_mode=aes-256-cts:v2
-fbe.metadata.wrappedkey=true
+# System Prop Properties
 
-# HARDWARE
-ro.vendor.mediatek.platform=MT6785
+# Hardware & Platform
+ro.mediatek.platform=MT6785
+ro.hardware=mt6785
+ro.hardware.egl=meow
+ro.opengles.version=196610
 ro.board.platform=mt6785
 
-# USB MTP
-ro.sys.usb.storage.type=mtp
+# A/B Support
+ro.build.ab_update=true
+ro.virtual_ab.enabled=true
+ro.boot.dynamic_partitions=true
 
-# BEANPOD KEYMASTER
+# Crypto FBE / FBEv2
+fbe.metadata.wrappedkey=true
+ro.crypto.volume.filenames_mode=aes-256-cts
+ro.crypto.dm_default_key.options_format.version=2
+ro.crypto.volume.metadata.method=dm-default-key
+ro.crypto.volume.options=::v2
+
+# Beanpod Hardware
 ro.hardware.kmsetkey=beanpod
 ro.hardware.gatekeeper=beanpod
 
-# TEE
-ro.mtk_tee_gp_support=1
-ro.mtk_microtrust_tee_support=1
-
-# FSTAB
+# Prefix Fstab
 ro.postinstall.fstab.prefix=/system
 
-# OTHER DEVICE CONFIG
-ro.boot.dynamic_partitions=true
+# USB
+ro.sys.usb.storage.type=mtp

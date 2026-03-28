@@ -4,43 +4,49 @@
 
 #<mnt_point>             <type>    <device>                                                        <mnt_flags and options>
 # User writeable partitions
-/boot                     emmc     /dev/block/platform/bootdevice/by-name/boot                     flags=display="Boot";slotselect;backup;flashimg
+/boot                     emmc     /dev/block/platform/bootdevice/by-name/boot                     flags=slotselect;backup;flashimg
+/vendor_boot              emmc     /dev/block/platform/bootdevice/by-name/vendor_boot              flags=display="Vendor Boot";slotselect;backup;flashimg
 /vbmeta                   emmc     /dev/block/platform/bootdevice/by-name/vbmeta                   flags=display="Vbmeta";slotselect;backup;flashimg
 /vbmeta_vendor            emmc     /dev/block/platform/bootdevice/by-name/vbmeta_vendor            flags=display="Vbmeta_vendor";slotselect;backup;flashimg
 /vbmeta_system            emmc     /dev/block/platform/bootdevice/by-name/vbmeta_system            flags=display="Vbmeta_system";slotselect;backup;flashimg
 
 # Firmware
-/dtbo                     emmc     /dev/block/platform/bootdevice/by-name/dtbo                     flags=display="Dtbo";slotselect;backup
+/dtbo                     emmc     /dev/block/platform/bootdevice/by-name/dtbo                     flags=display="dtbo";slotselect;backup;flashimg
 /metadata                 ext4     /dev/block/platform/bootdevice/by-name/md_udc                   flags=display="Metadata";backup
+/data                     f2fs     /dev/block/platform/bootdevice/by-name/userdata                 flags=fileencryption=aes-256-xts:aes-256-cts:v2,keydirectory=/metadata/vold/metadata_encryption
 /misc                     emmc     /dev/block/platform/bootdevice/by-name/misc                     flags=display="Misc";backup
 
 # Sensitive Data
-/nvcfg                    ext4     /dev/block/platform/bootdevice/by-name/nvcfg                    flags=display="Nvcfg";backup
-/persist_image            emmc     /dev/block/platform/bootdevice/by-name/persist                  flags=display="Persist_image";backup=1;flashimg
-/persistent               emmc     /dev/block/platform/bootdevice/by-name/frp                      flags=display="Persistent";backup
+/nvcfg                    ext4     /dev/block/platform/bootdevice/by-name/nvcfg                    flags=display="Nvcfg";slotselect;backup;flashimg
+/persist_image            emmc     /dev/block/platform/bootdevice/by-name/persist                  flags=display="Persist";slotselect;backup;flashimg
+/persistent               emmc     /dev/block/platform/bootdevice/by-name/frp                      flags=display="Persistent";slotselect;backup;flashimg
 
 # IMEI and modem related
-/nvdata                   ext4     /dev/block/platform/bootdevice/by-name/nvdata                   flags=display="Nvdata";backup
-/protect_f                ext4     /dev/block/platform/bootdevice/by-name/protect1                 flags=display="Protect_f";backup
-/protect_s                ext4     /dev/block/platform/bootdevice/by-name/protect2                 flags=display="Protect_s";backup
-/nvram                    emmc     /dev/block/platform/bootdevice/by-name/nvram                    flags=display="Nvram";backup
+/nvdata                   ext4     /dev/block/platform/bootdevice/by-name/nvdata                   flags=display="Nvdata";slotselect;backup;flashimg
+/protect_f                ext4     /dev/block/platform/bootdevice/by-name/protect1                 flags=display="Protect_f";slotselect;backup;flashimg
+/protect_s                ext4     /dev/block/platform/bootdevice/by-name/protect2                 flags=display="Protect_s";slotselect;backup;flashimg
+/nvram                    emmc     /dev/block/platform/bootdevice/by-name/nvram                    flags=display="Nvram";slotselect;backup;flashimg
 
 # Mediatek's Standard Partitions
-/bootloader               emmc     /dev/block/platform/bootdevice/by-name/lk                       flags=display="Bootloader";slotselect;backup;flashimg
-/expdb                    emmc     /dev/block/platform/bootdevice/by-name/expdb                    flags=display="Expdb"
+/bootloader               emmc     /dev/block/platform/bootdevice/by-name/lk                       flags=display="Bootloader";slotselect;flashimg
+/expdb                    emmc     /dev/block/platform/bootdevice/by-name/expdb                    flags=display="Expdb";slotselect;backup;flashimg
 /logo                     emmc     /dev/block/platform/bootdevice/by-name/logo                     flags=display="Logo";slotselect;backup;flashimg
-/otp                      emmc     /dev/block/platform/bootdevice/by-name/otp                      flags=display="Otp"
-/seccfg                   emmc     /dev/block/platform/bootdevice/by-name/seccfg                   flags=display="Seccfg"
-/spmfw                    emmc     /dev/block/platform/bootdevice/by-name/spmfw                    flags=display="Spmfw";slotselect
-/tee                      emmc     /dev/block/platform/bootdevice/by-name/tee                      flags=display="Tee";backup;slotselect;flashimg
+/otp                      emmc     /dev/block/platform/bootdevice/by-name/otp                      flags=display="Otp";slotselect;backup;flashimg
+/seccfg                   emmc     /dev/block/platform/bootdevice/by-name/seccfg                   flags=display="Seccfg";slotselect;backup;flashimg
+/spmfw                    emmc     /dev/block/platform/bootdevice/by-name/spmfw                    flags=display="Spmfw";slotselect;backup;flashimg
+/tee                      emmc     /dev/block/platform/bootdevice/by-name/tee                      flags=display="Tee";slotselect;backup;flashimg
 
-# External Storage & Internal Storage (For Orangefox)
+# Cache 
+Cache partition (tranfs)
+/cache                    ext4     /dev/block/platform/bootdevice/by-name/tranfs                   flags=display="Cache";backup;wipeingui
+
+# Super Partition
+/super                    emmc     /dev/block/platform/bootdevice/by-name/super                    flags=display="Super";backup;flashimg
+
+# External & Storage
 /storage                  f2fs     /data/media/0                                                   flags=display="Internal Storage";usermrf;backup=1;fsflags="bind";removable
 /external_sd              vfat     /dev/block/mmcblk0p1 /dev/block/mmcblk0 /dev/block/mmcblk1p1    flags=display="Micro SD Card";storage;wipeingui;removable;backup=0
 /usb_otg                  vfat     /dev/block/sda1 /dev/block/sda /dev/block/sdd1                  flags=display="USB-OTG";storage;wipeingui;removable;backup=0
 
-# Superimage logical partitions
-/system_image             emmc     /dev/block/platform/bootdevice/by-name/system                   flags=backup;flashimg
-/vendor_image             emmc     /dev/block/platform/bootdevice/by-name/vendor                   flags=backup;flashimg
-/system_ext_image         emmc     /dev/block/platform/bootdevice/by-name/system_ext               flags=display="System_Ext Image";backup;flashimg
-/product_image            emmc     /dev/block/platform/bootdevice/by-name/product                  flags=display="Product Image";backup;flashimg
+# Allow Flash GSI Image
+/system_image             emmc     /dev/block/mapper/system_a                                      flags=slotselect
