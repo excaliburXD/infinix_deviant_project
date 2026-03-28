@@ -1,0 +1,10 @@
+# Vendor Prop Properties
+ro.vendor.mediatek.platform=MT6785
+ro.vendor.mtk_microtrust_tee_support=1
+ro.vendor.mtk_tee_gp_support=1
+ro.apex.updatable=true
+ro.vendor.mtk_f2fs_enable=1
+ro.vendor.mtk_emmc_support=1
+vendor.usb.use_ffs_mtp=1
+persist.vendor.mtk.pl_lnk=1
+init.userspace_reboot.is_supported=true
