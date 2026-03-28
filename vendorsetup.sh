@@ -24,7 +24,7 @@ export FOX_REMOVE_AAPT=1
 # Feature Support
 export FOX_ENABLE_APP_MANAGER=1
 export FOX_USE_BASH_SHELL=1
-export FOX_ASH_IS_BASH=true
+export FOX_ASH_IS_BASH=1
 export FOX_USE_NANO_EDITOR=1
 export FOX_USE_TAR_BINARY=1
 export FOX_USE_XZ_UTILS=1
