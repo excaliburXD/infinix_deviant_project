@@ -1,0 +1,196 @@
+name: Recovery Builder - OFRP A12 deviant
+
+on:
+  workflow_dispatch:
+    inputs:
+      MANIFEST_BRANCH:
+        description: 'OrangeFox Manifest Branch'
+        required: true
+        default: '12.1'
+        type: choice
+        options:
+        - 12.1
+        - 11.0
+      DEVICE_TREE:
+        description: 'Custom Recovery Tree URL'
+        required: true
+        default: 'https://github.com/excaliburXD/infinix_deviant_project.git'
+      DEVICE_TREE_BRANCH:
+        description: 'Device Tree Branch'
+        required: true
+        default: 'fox-11-deviant'
+      DEVICE_PATH:
+        description: 'Device Path (e.g., device/xiaomi/sweet)'
+        required: true
+        default: 'device/infinix/deviant'
+      DEVICE_NAME:
+        description: 'Device Codename'
+        required: true
+        default: 'deviant'
+      BUILD_TARGET:
+        description: 'Build Target'
+        required: true
+        default: 'boot'
+        type: choice
+        options:
+        - boot
+        - recovery
+        - vendorboot
+      BUILD_TYPE:
+        description: 'Build Type'
+        required: true
+        default: 'eng'
+        type: choice
+        options:
+          - eng
+          - userdebug
+          - user
+      LDCHECK:
+        description: 'Blob to Check (for LDCheck)'
+        required: true
+        default: 'vendor/bin/teei_daemon'
+        
+jobs:
+  build:
+    name: Build OFR by ${{ github.actor }}
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.sender.id == github.event.repository.owner.id
+    env:
+      GITHUB_TOKEN: ${{ secrets.RECOVERY }}
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Display Inputs
+      run: |
+        echo "Manifest Branch: ${{ github.event.inputs.MANIFEST_BRANCH }}"
+        echo "Device: ${{ github.event.inputs.DEVICE_NAME }}"
+        echo "Build Target: ${{ github.event.inputs.BUILD_TARGET }}"
+        echo "Build Type: ${{ github.event.inputs.BUILD_TYPE }}"
+        echo "Device Tree: ${{ github.event.inputs.DEVICE_TREE }}"
+        echo "Device Tree Branch: ${{ github.event.inputs.DEVICE_TREE_BRANCH }}"
+        echo "Device Path: ${{ github.event.inputs.DEVICE_PATH }}"
+        echo "LDCHECK: ${{ github.event.inputs.LDCHECK }}"
+
+    - name: Clean-up
+      uses: rokibhasansagar/slimhub_actions@main
+      
+    - name: Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 24
+        
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt -y install bc bison build-essential ccache curl flex g++-multilib gcc-multilib git git-lfs gnupg gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev lz4 libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev aria2
+
+    - name: Build Environment
+      run: |
+        git clone https://gitlab.com/OrangeFox/misc/scripts.git -b master
+        cd scripts
+        sudo bash setup/android_build_env.sh
+
+    - name: Setup Java 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+
+    - name: Setup CCache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: pbrp-${{ github.event.inputs.DEVICE_NAME }}
+        max-size: 15G
+        
+    - name: Install Git Repo Tool
+      run: |
+        mkdir ~/bin
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        sudo ln -sf ~/bin/repo /usr/bin/repo
+
+    - name: Set-up Manifest
+      if: inputs.MANIFEST_BRANCH == '11.0' || inputs.MANIFEST_BRANCH == '12.1'
+      run: |
+        mkdir -p ${GITHUB_WORKSPACE}/OrangeFox
+        cd ${GITHUB_WORKSPACE}/OrangeFox
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+        git clone https://gitlab.com/OrangeFox/sync.git -b master
+        cd sync
+        ./orangefox_sync.sh --branch ${{ inputs.MANIFEST_BRANCH }} --path ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}
+
+    - name: Clone Device Tree
+      run: |
+        cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}
+        TREE_URL="${{ github.event.inputs.DEVICE_TREE }}"
+        TOKEN="${{ secrets.RECOVERY }}"
+        if [ -n "$TOKEN" ]; then
+          AUTHED_URL=$(echo $TREE_URL | sed -e "s#https://#https://${TOKEN}@#")
+          git clone "$AUTHED_URL" -b ${{ github.event.inputs.DEVICE_TREE_BRANCH }} ./${{ github.event.inputs.DEVICE_PATH }}
+        else
+          git clone "$TREE_URL" -b ${{ github.event.inputs.DEVICE_TREE_BRANCH }} ./${{ github.event.inputs.DEVICE_PATH }}
+        fi
+        cd ${{ github.event.inputs.DEVICE_PATH }}
+        echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+    - name: Find Makefile
+      run: |
+        cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}
+        if [ -f ${{ github.event.inputs.DEVICE_PATH }}/twrp_${{ github.event.inputs.DEVICE_NAME }}.mk ]; then
+          echo "DEVICE_MAKEFILE=twrp_${{ github.event.inputs.DEVICE_NAME }}" >> $GITHUB_ENV
+        elif [ -f ${{ github.event.inputs.DEVICE_PATH }}/omni_${{ github.event.inputs.DEVICE_NAME }}.mk ]; then
+          echo "DEVICE_MAKEFILE=omni_${{ github.event.inputs.DEVICE_NAME }}" >> $GITHUB_ENV
+        else
+          echo "DEVICE_MAKEFILE=twrp_${{ github.event.inputs.DEVICE_NAME }}" >> $GITHUB_ENV
+          echo "Warning: No specific makefile found, using default twrp_${{ github.event.inputs.DEVICE_NAME }}"
+        fi
+
+    - name: Building OrangeFox
+      run: |
+        cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}        
+        set +e
+        source build/envsetup.sh
+        export ALLOW_MISSING_DEPENDENCIES=true
+        export CCACHE_EXEC=$(which ccache)
+        export USE_CCACHE=1
+        set -e
+        lunch ${{ env.DEVICE_MAKEFILE }}-${{ github.event.inputs.BUILD_TYPE }}
+        make clean
+        mka adbd ${{ inputs.BUILD_TARGET }}image -j$(nproc --all)
+
+    - name: Set Build Date
+      run: |
+        echo "BUILD_DATE=$(date +%Y%m%d-%H%M)" >> $GITHUB_ENV
+        cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}
+
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/out/target/product/${{ inputs.DEVICE_NAME }}/OrangeFox*.img
+          OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/out/target/product/${{ inputs.DEVICE_NAME }}/OrangeFox*.zip
+        name: OrangeFox Recovery for ${{ inputs.DEVICE_NAME }} - ${{ env.BUILD_DATE }}
+        tag_name: ${{ github.run_id }}
+        body: |
+            Firmware Version **RP1A.200720.011/221114V590**
+            **Date:** ${{ github.event.head_commit.timestamp }}
+            **Build:** fox_${{ inputs.MANIFEST_BRANCH }}
+            **Device:** ${{ inputs.DEVICE_NAME }}
+            **Maintainer:** @${{ github.actor }}
+            **Status:** Stabil
+            **Variant:** XOS
+            **Author:** ${{ github.event.head_commit.author.name }}
+            **Commit:** `${{ github.sha }}`
+
+    - name: Cleanup after build
+      run: |
+        echo "Cleaning up..."
+        rm -rf ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/.repo
+        rm -rf ~/.ccache
+        rm -rf ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/out
+        sudo apt clean
+        echo "Cleanup complete."
