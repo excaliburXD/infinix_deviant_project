@@ -207,4 +207,5 @@ TARGET_INIT_VENDOR_LIB := libinit_Infinix-deviant
 TARGET_RECOVERY_DEVICE_MODULES := libinit_Infinix-deviant
 
 # Maintainer
-TW_DEVICE_VERSION := Infinix Note 10 Pro (deviant) | ExcaliburXD
+PB_DISABLE_DEFAULT_TREBLE_COMP := true
+MAINTAINER := 'excaliburXD'
