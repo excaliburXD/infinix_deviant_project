@@ -150,19 +150,27 @@ jobs:
         export ALLOW_MISSING_DEPENDENCIES=true
         lunch ${{ github.event.inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all)
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
+      
+    - name: Set Build Date
+      run: echo "BUILD_DATE=$(date +%Y%m%d-%H%M)" >> $GITHUB_ENV
 
     - name: Upload to Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        files: | 
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/${{ github.event.inputs.BUILD_TARGET }}.img
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*.zip
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*vendor*.img
-        name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
+        files: |
+          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/out/target/product/${{ inputs.DEVICE_NAME }}/PitchBlack*.img
+          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/out/target/product/${{ inputs.DEVICE_NAME }}/PitchBlack*.zip
+        name: PitchBlack Recovery for ${{ inputs.DEVICE_NAME }} - ${{ env.BUILD_DATE }}
         tag_name: ${{ github.run_id }}
         body: |
-          Manifest: ${{ github.event.inputs.MANIFEST_BRANCH }}
-          Device: ${{ github.event.inputs.DEVICE_NAME }}
-          Target: ${{ github.event.inputs.BUILD_TARGET }}.img
+            Firmware Version **RP1A.200720.011/221114V590**
+            **Date:** ${{ github.event.head_commit.timestamp }}
+            **Build:** pb_${{ inputs.MANIFEST_BRANCH }}
+            **Device:** ${{ inputs.DEVICE_NAME }}
+            **Maintainer:** @${{ github.actor }}
+            **Status:** Stabil
+            **Variant:** XOS
+            **Author:** ${{ github.event.head_commit.author.name }}
+            **Commit:** `${{ github.sha }}`
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
