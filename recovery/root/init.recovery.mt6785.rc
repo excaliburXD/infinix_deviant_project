@@ -9,6 +9,15 @@ on init
     setprop sys.usb.config adb
     setprop sys.usb.controller musb-hdrc
 
+# We need vold early for metadata encryption
+on early-fs
+    start vold
+
+on late-fs
+    # Mount RW partitions which need run fsck
+    mount_all /first_stage_ramdisk/fstab.mt6785 --late
+    mount_all /first_stage_ramdisk/fstab.emmc --late
+
 on fs
     # Mount persist partition
     mkdir /mnt/vendor/persist 0771 root root
