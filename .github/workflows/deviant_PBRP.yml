@@ -144,7 +144,7 @@ jobs:
       with:
         swap-size-gb: 12
 
-    - name: Building recovery
+    - name: Building recovery PitchBlack Recovery 
       run: |
         source build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
@@ -152,17 +152,18 @@ jobs:
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
 
     - name: Upload to Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: | 
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/${{ github.event.inputs.BUILD_TARGET }}.img
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*.zip
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*vendor*.img
+         workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/${{ github.event.inputs.BUILD_TARGET }}.img
+         workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*.zip
+         workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/file.zip
+         workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*vendor*.img
         name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: |
-          Manifest: ${{ github.event.inputs.MANIFEST_BRANCH }}
-          Device: ${{ github.event.inputs.DEVICE_NAME }}
-          Target: ${{ github.event.inputs.BUILD_TARGET }}.img
+         Manifest: ${{ github.event.inputs.MANIFEST_BRANCH }}
+         Device: ${{ github.event.inputs.DEVICE_NAME }}
+         Target: ${{ github.event.inputs.BUILD_TARGET }}.img
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
